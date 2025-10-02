@@ -1,0 +1,49 @@
+name: snapshot
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # щогодини, на 00 хв (UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Update CSV (append one row)
+        run: python -u scripts/update.py
+
+      - name: Commit if changed (diff-guard) as YOU
+        env:
+          # ⬇️ заміни на свій логін та no-reply email
+          GIT_AUTHOR_NAME: "ManfulMan1"
+          GIT_AUTHOR_EMAIL: "122809234+ManfulMan1@users.noreply.github.com"
+          GIT_COMMITTER_NAME: "ManfulMan1"
+          GIT_COMMITTER_EMAIL: "122809234+ManfulMan1@users.noreply.github.com"
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config user.name  "$GIT_AUTHOR_NAME"
+          git config user.email "$GIT_AUTHOR_EMAIL"
+
+          echo "[workflow] git status BEFORE:"; git status --porcelain || true
+          git add -A
+          echo "[workflow] git status AFTER add:"; git status --porcelain || true
+
+          if git diff --cached --quiet; then
+            echo "[workflow] No staged changes — skip commit."
+          else
+            git commit -m "snapshot: $(date -u +"%Y-%m-%d %H:%M:%SZ")"
+            git push "https://$GH_TOKEN@github.com/${{ github.repository }}.git" "HEAD:${{ github.ref_name }}"
+            echo "[workflow] push DONE"
+          fi
