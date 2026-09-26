@@ -1,0 +1,2 @@
+ts_utc,unix,iso_week,weekday,hour_utc,day_of_year,month,quarter,is_month_start,is_quarter_start,kyiv,new_york,checksum,format
+2026-09-26T03:25:33+00:00,1790393133,39,6,3,269,9,3,0,0,2026-09-26T06:25:33+03:00,2026-09-25T23:25:33-04:00,3aa30ca462c6,csv-ledger-v1
